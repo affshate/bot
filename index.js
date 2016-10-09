@@ -29,6 +29,10 @@ levelup('./mydb', (err, db) => {
       return;
     }
 
+    if (!message.text) {
+      return;
+    }
+
     // штрафы
     if (message.text.toLowerCase().trim() === 'штрафы') {
       const badUsers = [];
