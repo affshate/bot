@@ -36,6 +36,7 @@ levelup('./mydb', (err, db) => {
     // штрафы
     if (message.text.toLowerCase().trim() === 'штрафы') {
       const badUsers = [];
+      const preferredStringLength = 25;
       db.createReadStream()
         .on('data', function (data) {
           badUsers.push({
@@ -50,7 +51,10 @@ levelup('./mydb', (err, db) => {
         .on('end', function () {
 
           const each = badUsers
-            .map(o => `${ o.name }: ${ o.value }`)
+            .map(o => {
+              const formatSpace = Array(Math.max(preferredStringLength - o.name.length, 0)).join('.');
+              return `${ o.name }:${ formatSpace }.${ o.value }`;
+            })
             .join('\r\n');
 
           const total = `Сумма всех штрафов: ${
@@ -68,12 +72,13 @@ levelup('./mydb', (err, db) => {
 
     // штраф
     if (~message.text.toLowerCase().indexOf('штраф')) {
-      const badUserId = (/\<\@.+\>/).exec(message.text);
-      if (!badUserId) {
+      const parsedMsg = (/\<\@(.+)\>\s(\d*)/).exec(message.text);
+      if (!parsedMsg) {
         return;
       }
 
-      const badUser = rtm.dataStore.getUserById(badUserId[0].slice(2, -1));
+      const badUser = rtm.dataStore.getUserById(parsedMsg[1]);
+      const increment = Math.max(+parsedMsg[2], 50);
 
       if (badUser) {
         db.get(badUser.id, (getError, value) => {
@@ -90,14 +95,14 @@ levelup('./mydb', (err, db) => {
             parsedValue = parseInt(value, 10);
           }
 
-          nextValue = parsedValue + 50;
+          nextValue = parsedValue + increment;
 
           db.put(badUser.id, nextValue, putError => {
             if (putError) throw putError;
 
             rtm.sendMessage(
               `Штрафую ${ badUser.profile.real_name_normalized } :sadkitty:
-              Его/ее штрафы выросли до ${ nextValue }.`,
+Сумма твоих штрафов: ${ nextValue }.`,
               message.channel
             );
           });
