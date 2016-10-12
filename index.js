@@ -37,6 +37,7 @@ levelup('./mydb', (err, db) => {
     if (message.text.toLowerCase().trim() === 'штрафы') {
       const badUsers = [];
       const preferredStringLength = 25;
+
       db.createReadStream()
         .on('data', function (data) {
           badUsers.push({
@@ -52,12 +53,14 @@ levelup('./mydb', (err, db) => {
 
           const each = badUsers
             .map(o => {
-              const formatSpace = Array(Math.max(preferredStringLength - o.name.length, 0)).join('.');
+              const formatSpace = Array(Math.max(preferredStringLength - o.name.length - 1, 0)).join('.');
               return `${ o.name }:${ formatSpace }.${ o.value }`;
             })
             .join('\r\n');
 
-          const total = `Сумма всех штрафов: ${
+          const totalString = 'Сумма всех штрафов';
+          const totalFormatSpace = Array(Math.max(preferredStringLength - totalString.length - 1, 0)).join('.');
+          const total = `${ totalString }:${ totalFormatSpace }.${
             badUsers.map(o => parseInt(o.value, 10)).reduce((t, c) => t+c, 0)
           }`;
 
