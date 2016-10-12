@@ -75,7 +75,7 @@ levelup('./mydb', (err, db) => {
 
     // штраф
     if (~message.text.toLowerCase().indexOf('штраф')) {
-      const parsedMsg = (/\<\@(.+)\>\s(\d*)/).exec(message.text);
+      const parsedMsg = (/\<\@(.+)\>\s*(\d*)/).exec(message.text);
       if (!parsedMsg) {
         return;
       }
