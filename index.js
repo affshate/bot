@@ -9,6 +9,8 @@ const config = require('./config');
 const token = config.SLACK_API_TOKEN || '';
 const parsingChannel = config.SLACK_PARSING_CHANNEL || '';
 
+const { vetoedUsers = [], bannedUsers = [] } = config;
+
 // Client
 const rtm = new RtmClient(token);
 
@@ -40,11 +42,13 @@ levelup('./mydb', (err, db) => {
 
       db.createReadStream()
         .on('data', function (data) {
-          badUsers.push({
-            name: rtm.dataStore.getUserById(data.key)
-                    .profile.real_name_normalized,
-            value: data.value
-          });
+          const userToShow = rtm.dataStore.getUserById(data.key);
+          if (!vetoedUsers.includes(userToShow.id)) {
+            badUsers.push({
+              name: userToShow.profile.real_name_normalized,
+              value: data.value
+            });
+          }
         })
         .on('error', function (err) {
           throw err;
@@ -53,8 +57,8 @@ levelup('./mydb', (err, db) => {
 
           const each = badUsers
             .sort(({ value: a }, { value: b }) => {
-              if (a > b) return 1;
-              if (a < b) return -1;
+              if (+a > +b) return -1;
+              if (+a < +b) return 1;
               return 0;
             })
             .map(o => {
@@ -86,12 +90,25 @@ levelup('./mydb', (err, db) => {
         return;
       }
 
+      const maxIncrement = 200;
+
       const goodUser = rtm.dataStore.getUserById(message.user);
       const goodUserName = goodUser.profile.real_name_normalized;
       const badUser = rtm.dataStore.getUserById(parsedMsg[1]);
-      const increment = Math.max(+parsedMsg[2], 50);
+      const increment =
+        Math.min(
+          Math.max(
+            +parsedMsg[2],
+            50
+          ),
+          maxIncrement
+        );
 
-      if (badUser) {
+      if (
+        badUser &&
+        !vetoedUsers.includes(badUser.id) &&
+        !bannedUsers.includes(message.user)
+      ) {
         db.get(badUser.id, (getError, value) => {
           let parsedValue;
           let nextValue;
@@ -112,7 +129,7 @@ levelup('./mydb', (err, db) => {
             if (putError) throw putError;
 
             rtm.sendMessage(
-              `Штрафую ${ badUser.profile.real_name_normalized } по приказу ${ goodUserName } :sadkitty:
+              `Штрафую ${ badUser.profile.real_name_normalized } на ${ increment } по приказу ${ goodUserName } :sadkitty:
 Сумма твоих штрафов: ${ nextValue }.`,
               message.channel
             );
