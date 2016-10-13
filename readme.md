@@ -26,7 +26,7 @@ cp config_example.json config.json
 
 SLACK_API_TOKEN - токен бота
 
-SLACK_PARSING_CHANNEL - канал, сюда пишем название канала, например `blackpower`
+SLACK_PARSING_CHANNEL - канал, сюда пишем название канала, в котором вы будете тестировать бота
 
 инсталлим пакеты
 
