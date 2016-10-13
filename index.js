@@ -9,8 +9,7 @@ const config = require('./config');
 const token = config.SLACK_API_TOKEN || '';
 const parsingChannel = config.SLACK_PARSING_CHANNEL || '';
 
-const vetoedUsers = ['U2M73RRU5'];
-const bannedUsers = ['U1B0UCF0S'];
+const { vetoedUsers = [], bannedUsers = [] } = config;
 
 // Client
 const rtm = new RtmClient(token);

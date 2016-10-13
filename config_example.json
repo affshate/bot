@@ -1,4 +1,6 @@
 {
   "SLACK_API_TOKEN": "",
-  "SLACK_PARSING_CHANNEL": ""
+  "SLACK_PARSING_CHANNEL": "",
+  "vetoedUsers": [""],
+  "bannedUsers": [""]
 }
