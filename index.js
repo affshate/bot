@@ -52,8 +52,14 @@ levelup('./mydb', (err, db) => {
         .on('end', function () {
 
           const each = badUsers
+            .sort(({ value: a }, { value: b }) => {
+              if (a > b) return 1;
+              if (a < b) return -1;
+              return 0;
+            })
             .map(o => {
-              const formatSpace = Array(Math.max(preferredStringLength - o.name.length - 1, 0)).join('.');
+              const valLength = o.value.toString().length;
+              const formatSpace = Array(Math.max(preferredStringLength - o.name.length - 1 + (4 - valLength), 0)).join('.');
               return `${ o.name }:${ formatSpace }.${ o.value }`;
             })
             .join('\r\n');
@@ -65,7 +71,7 @@ levelup('./mydb', (err, db) => {
           }`;
 
           rtm.sendMessage(
-            `${ each }\r\n${ total }`,
+            `\`\`\`${ each }\r\n${ total }\`\`\``,
             message.channel
           );
         });
@@ -80,6 +86,8 @@ levelup('./mydb', (err, db) => {
         return;
       }
 
+      const goodUser = rtm.dataStore.getUserById(message.user);
+      const goodUserName = goodUser.profile.real_name_normalized;
       const badUser = rtm.dataStore.getUserById(parsedMsg[1]);
       const increment = Math.max(+parsedMsg[2], 50);
 
@@ -104,7 +112,7 @@ levelup('./mydb', (err, db) => {
             if (putError) throw putError;
 
             rtm.sendMessage(
-              `Штрафую ${ badUser.profile.real_name_normalized } :sadkitty:
+              `Штрафую ${ badUser.profile.real_name_normalized } по приказу ${ goodUserName } :sadkitty:
 Сумма твоих штрафов: ${ nextValue }.`,
               message.channel
             );
