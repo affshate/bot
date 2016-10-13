@@ -25,7 +25,8 @@ cp config_example.json config.json
 и заполнить его:
 
 SLACK_API_TOKEN - токен бота
-SLACK_PARSING_CHANNEL - канал, сюда пишем название канала, например blackpower
+
+SLACK_PARSING_CHANNEL - канал, сюда пишем название канала, например `blackpower`
 
 инсталлим пакеты
 
@@ -37,3 +38,7 @@ npm i
 ```
 npm start
 ```
+
+Редактируем, перезапускаем, коммитим, пушим.
+
+Когда все готов, делаем PR в мастер.
